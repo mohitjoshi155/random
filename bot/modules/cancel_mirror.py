@@ -1,13 +1,13 @@
+from time import sleep
+
 from telegram.ext import CommandHandler, run_async
 
 from bot import download_dict, dispatcher, download_dict_lock, DOWNLOAD_DIR
+from bot.helper.ext_utils.bot_utils import getDownloadByGid, MirrorStatus
 from bot.helper.ext_utils.fs_utils import clean_download
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.filters import CustomFilters
-from bot.helper.telegram_helper.message_utils import *
-
-from time import sleep
-from bot.helper.ext_utils.bot_utils import getDownloadByGid, MirrorStatus
+from bot.helper.telegram_helper.message_utils import sendMessage, delete_all_messages
 
 
 @run_async
@@ -57,7 +57,8 @@ def cancel_all(update, context):
         count = 0
         for dlDetails in list(download_dict.values()):
             if dlDetails.status() == MirrorStatus.STATUS_DOWNLOADING \
-                    or dlDetails.status() == MirrorStatus.STATUS_WAITING:
+                    or dlDetails.status() == MirrorStatus.STATUS_WAITING \
+                    or dlDetails.status().startswith(MirrorStatus.STATUS_RETRYING):
                 dlDetails.download().cancel_download()
                 count += 1
     delete_all_messages()

@@ -2,6 +2,7 @@ import logging
 import re
 import threading
 import time
+from html import escape
 
 from bot import download_dict, download_dict_lock
 
@@ -13,6 +14,7 @@ URL_REGEX = r"(?:(?:https?|ftp):\/\/)?[\w/\-?=%.]+\.[\w/\-?=%.]+"
 
 
 class MirrorStatus:
+    STATUS_RETRYING = "Retrying"
     STATUS_UPLOADING = "Uploading"
     STATUS_DOWNLOADING = "Downloading"
     STATUS_WAITING = "Queued"
@@ -92,7 +94,7 @@ def get_readable_message():
     with download_dict_lock:
         msg = ""
         for download in list(download_dict.values()):
-            msg += f"<i>{download.name()}</i> - "
+            msg += f"<i>{escape(download.name())}</i> - "
             msg += download.status()
             if download.status() != MirrorStatus.STATUS_ARCHIVING and download.status() != MirrorStatus.STATUS_EXTRACTING:
                 msg += f"\n<code>{get_progress_bar_string(download)} {download.progress()}</code> of " \
@@ -128,7 +130,6 @@ def get_readable_time(seconds: int) -> str:
 
 def is_mega_link(url: str):
     return "mega.nz" in url
-
 
 def is_url(url: str):
     url = re.findall(URL_REGEX, url)

@@ -2,12 +2,13 @@ import logging
 import os
 import threading
 import time
+import socket
+import subprocess
+
 import aria2p
 import telegram.ext as tg
 from dotenv import load_dotenv
-import socket
 from megasdkrestclient import MegaSdkRestClient, errors as mega_err
-import subprocess
 
 socket.setdefaulttimeout(600)
 

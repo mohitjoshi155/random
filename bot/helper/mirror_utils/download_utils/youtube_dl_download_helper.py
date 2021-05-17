@@ -1,11 +1,13 @@
-from .download_helper import DownloadHelper
-import time
-from youtube_dl import YoutubeDL, DownloadError
-from bot import download_dict_lock, download_dict
-from ..status_utils.youtube_dl_download_status import YoutubeDLDownloadStatus
-import logging
 import re
+import time
+import logging
 import threading
+
+from youtube_dl import YoutubeDL, DownloadError
+
+from bot import download_dict_lock, download_dict
+from bot.helper.mirror_utils.download_utils.download_helper import DownloadHelper
+from bot.helper.mirror_utils.status_utils.youtube_dl_download_status import YoutubeDLDownloadStatus
 
 LOGGER = logging.getLogger(__name__)
 
@@ -40,7 +42,8 @@ class YoutubeDLHelper(DownloadHelper):
         self.opts = {
             'progress_hooks': [self.__onDownloadProgress],
             'logger': MyLogger(self),
-            'usenetrc': True
+            'usenetrc': True,
+            'format': "best/bestvideo+bestaudio"
         }
         self.__download_speed = 0
         self.download_speed_readable = ''

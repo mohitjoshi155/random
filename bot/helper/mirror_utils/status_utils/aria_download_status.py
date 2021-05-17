@@ -1,6 +1,6 @@
 from bot import aria2, DOWNLOAD_DIR, LOGGER
 from bot.helper.ext_utils.bot_utils import MirrorStatus
-from .status import Status
+from bot.helper.mirror_utils.status_utils.status import Status
 
 
 def get_download(gid):
@@ -9,10 +9,12 @@ def get_download(gid):
 
 class AriaDownloadStatus(Status):
 
-    def __init__(self, gid, listener):
+    def __init__(self, gid, listener, obj=None):
         super().__init__()
+        self.obj = obj
         self.upload_name = None
         self.is_archiving = False
+        self.__name = None
         self.__gid = gid
         self.__download = get_download(self.__gid)
         self.__uid = listener.uid
@@ -47,7 +49,13 @@ class AriaDownloadStatus(Status):
         return self.aria_download().download_speed_string()
 
     def name(self):
-        return self.aria_download().name
+        if self.obj:
+            name, progress = self.obj.CustomName(self.__uid)
+        if not name:
+            name = self.aria_download().name
+        if progress:
+            name = f"{name} {progress}"
+        return name
 
     def path(self):
         return f"{DOWNLOAD_DIR}{self.__uid}"
@@ -77,7 +85,7 @@ class AriaDownloadStatus(Status):
     def download(self):
         return self
 
-    def updateName(self,name):
+    def updateName(self, name):
         self.__name = name
 
     def updateGid(self,gid):
@@ -85,7 +93,7 @@ class AriaDownloadStatus(Status):
 
     def getListener(self):
         return self.__listener
-    
+
     def uid(self):
         return self.__uid
 
@@ -104,4 +112,3 @@ class AriaDownloadStatus(Status):
             downloads = aria2.get_downloads(download.followed_by_ids)
             aria2.pause(downloads)
         aria2.pause([download])
-

@@ -1,3 +1,8 @@
+import os
+import pathlib
+import subprocess
+import threading
+
 import requests
 from telegram.ext import CommandHandler, run_async
 
@@ -7,6 +12,7 @@ from bot.helper.ext_utils import fs_utils, bot_utils
 from bot.helper.ext_utils.bot_utils import setInterval
 from bot.helper.ext_utils.exceptions import DirectDownloadLinkException, NotSupportedExtractionArchive
 from bot.helper.mirror_utils.download_utils.aria2_download import AriaDownloadHelper
+from bot.helper.mirror_utils.download_utils.mega_download import MegaDownloader
 from bot.helper.mirror_utils.download_utils.direct_link_generator import direct_link_generator
 from bot.helper.mirror_utils.download_utils.telegram_downloader import TelegramDownloadHelper
 from bot.helper.mirror_utils.status_utils import listeners
@@ -16,23 +22,20 @@ from bot.helper.mirror_utils.status_utils.upload_status import UploadStatus
 from bot.helper.mirror_utils.upload_utils import gdriveTools
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.filters import CustomFilters
-from bot.helper.telegram_helper.message_utils import *
-from bot.helper.mirror_utils.download_utils.mega_download import MegaDownloader
-import pathlib
-import os
-import subprocess
-import threading
+from bot.helper.telegram_helper.message_utils import delete_all_messages, sendMessage, \
+    sendStatusMessage, update_all_messages
 
 ariaDlManager = AriaDownloadHelper()
 ariaDlManager.start_listener()
 
 
 class MirrorListener(listeners.MirrorListeners):
-    def __init__(self, bot, update, isTar=False, tag=None, extract=False):
+    def __init__(self, bot, update, isTar=False, tag=None, extract=False, root=""):
         super().__init__(bot, update)
         self.isTar = isTar
         self.tag = tag
         self.extract = extract
+        self.root = root
 
     def onDownloadStarted(self):
         pass
@@ -92,12 +95,18 @@ class MirrorListener(listeners.MirrorListeners):
                 LOGGER.info("Not any valid archive, uploading file as it is.")
                 path = f'{DOWNLOAD_DIR}{self.uid}/{name}'
         else:
-            path = f'{DOWNLOAD_DIR}{self.uid}/{name}'
+            if self.root:
+                path = f'{DOWNLOAD_DIR}{self.uid}/{self.root}'
+            else:
+                path = f'{DOWNLOAD_DIR}{self.uid}/{name}'
         up_name = pathlib.PurePath(path).name
         LOGGER.info(f"Upload Name : {up_name}")
         drive = gdriveTools.GoogleDriveHelper(up_name, self)
-        if size == 0:
-            size = fs_utils.get_path_size(m_path)
+        if self.root:
+            size = fs_utils.get_path_size(path)
+        else:
+            if size == 0:
+                size = fs_utils.get_path_size(m_path)
         upload_status = UploadStatus(drive, size, self)
         with download_dict_lock:
             download_dict[self.uid] = upload_status
@@ -176,13 +185,31 @@ class MirrorListener(listeners.MirrorListeners):
 
 
 def _mirror(bot, update, isTar=False, extract=False):
-    message_args = update.message.text.split(' ')
+    message_args = update.message.text.split(' ', 3)
     try:
         link = message_args[1]
     except IndexError:
         link = ''
     LOGGER.info(link)
     link = link.strip()
+    try:
+        options = message_args[2]
+    except IndexError:
+        options = None
+
+    aria_options = {}
+    if options:
+        options = options.rsplit(",name=", 1)
+        try:
+            aria_options.update({"out": options[1]})
+        except IndexError:
+            pass
+        left_options = options[0]
+        options = left_options.split(",")
+        for option in options:
+            option_dict = option.split("=", 1)
+            aria_options.update({option_dict[0]:option_dict[1]})
+
     reply_to = update.message.reply_to_message
     if reply_to is not None:
         file = None
@@ -220,7 +247,7 @@ def _mirror(bot, update, isTar=False, extract=False):
         mega_dl = MegaDownloader(listener)
         mega_dl.add_download(link, f'{DOWNLOAD_DIR}{listener.uid}/')
     else:
-        ariaDlManager.add_download(link, f'{DOWNLOAD_DIR}{listener.uid}/', listener)
+        ariaDlManager.add_download(f'{DOWNLOAD_DIR}/{listener.uid}/', [link], listener, aria_options)
     sendStatusMessage(update, bot)
     if len(Interval) == 0:
         Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages))

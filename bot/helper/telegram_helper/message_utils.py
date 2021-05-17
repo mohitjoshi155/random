@@ -1,11 +1,10 @@
-from telegram.message import Message
-from telegram.update import Update
 import time
+
+from telegram import Message, Update
+
 from bot import AUTO_DELETE_MESSAGE_DURATION, LOGGER, bot, \
     status_reply_dict, status_reply_dict_lock
 from bot.helper.ext_utils.bot_utils import get_readable_message
-from telegram.error import TimedOut, BadRequest
-from bot import bot
 
 
 def sendMessage(text: str, bot, update: Update):
@@ -68,6 +67,7 @@ def update_all_messages():
         for chat_id in list(status_reply_dict.keys()):
             if status_reply_dict[chat_id] and msg != status_reply_dict[chat_id].text:
                 try:
+                    msg = msg[:2048]
                     editMessage(msg, status_reply_dict[chat_id])
                 except Exception as e:
                     LOGGER.error(str(e))
@@ -85,5 +85,6 @@ def sendStatusMessage(msg, bot):
             except Exception as e:
                 LOGGER.error(str(e))
                 del status_reply_dict[msg.message.chat.id]
+                pass
         message = sendMessage(progress, bot, msg)
         status_reply_dict[msg.message.chat.id] = message

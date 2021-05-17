@@ -1,13 +1,15 @@
-from telegram.ext import CommandHandler, run_async
+import threading
+
 from telegram import Bot, Update
-from bot import Interval, DOWNLOAD_DIR, DOWNLOAD_STATUS_UPDATE_INTERVAL, dispatcher, LOGGER
+from telegram.ext import CommandHandler, run_async
+
+from bot import Interval, DOWNLOAD_DIR, DOWNLOAD_STATUS_UPDATE_INTERVAL, dispatcher
+from bot.modules.mirror import MirrorListener
 from bot.helper.ext_utils.bot_utils import setInterval
-from bot.helper.telegram_helper.message_utils import update_all_messages, sendMessage, sendStatusMessage
-from .mirror import MirrorListener
 from bot.helper.mirror_utils.download_utils.youtube_dl_download_helper import YoutubeDLHelper
 from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.filters import CustomFilters
-import threading
+from bot.helper.telegram_helper.message_utils import update_all_messages, sendMessage, sendStatusMessage
 
 
 def _watch(bot: Bot, update: Update, args: list, isTar=False):
@@ -19,11 +21,11 @@ def _watch(bot: Bot, update: Update, args: list, isTar=False):
         sendMessage(msg, bot, update)
         return
     try:
-      qual = args[1]
-      if qual != "audio":
-        qual = f'best[height<={qual}]/bestvideo[height<={qual}]+bestaudio'
+        qual = args[1]
+        if qual != "audio":
+            qual = f'best[height<={qual}]/bestvideo[height<={qual}]+bestaudio'
     except IndexError:
-      qual = "best/bestvideo+bestaudio"
+        qual = "best/bestvideo+bestaudio"
     reply_to = update.message.reply_to_message
     if reply_to is not None:
         tag = reply_to.from_user.username

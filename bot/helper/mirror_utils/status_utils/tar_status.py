@@ -1,6 +1,5 @@
-from .status import Status
 from bot.helper.ext_utils.bot_utils import get_readable_file_size, MirrorStatus
-
+from bot.helper.mirror_utils.status_utils.status import Status
 
 class TarStatus(Status):
     def __init__(self, name, path, size):

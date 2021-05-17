@@ -1,11 +1,13 @@
-import sys
-from bot import aria2, LOGGER, DOWNLOAD_DIR
-import shutil
 import os
+import sys
 import pathlib
-import magic
+import shutil
 import tarfile
-from .exceptions import NotSupportedExtractionArchive
+
+import magic
+
+from bot import aria2, LOGGER, DOWNLOAD_DIR
+from bot.helper.ext_utils.exceptions import NotSupportedExtractionArchive
 
 
 def clean_download(path: str):
@@ -37,7 +39,6 @@ def exit_clean_up(signal, frame):
     except KeyboardInterrupt:
         LOGGER.warning("Force Exiting before the cleanup finishes!")
         sys.exit(1)
-
 
 def get_path_size(path):
     if os.path.isfile(path):
@@ -89,6 +90,6 @@ def get_base_name(orig_path: str):
 
 def get_mime_type(file_path):
     mime = magic.Magic(mime=True)
-    mime_type = mime.from_file(file_path)
+    mime_type = mime.from_buffer(open(file_path, 'rb').read(4096))
     mime_type = mime_type if mime_type else "text/plain"
     return mime_type
