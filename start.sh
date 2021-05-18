@@ -1,1 +1,1 @@
-./aria.sh; python3 -m bot
+./aria.sh; ./flaresolverr.sh; python3 -m bot

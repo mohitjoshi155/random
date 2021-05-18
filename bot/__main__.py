@@ -16,7 +16,7 @@ from bot.helper.telegram_helper.bot_commands import BotCommands
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.message_utils import sendMessage, sendLogFile, editMessage
 from bot.modules import authorize, list, cancel_mirror, mirror_status, mirror, clone, watch
-from bot.custom_mirrors import fembed, onedrive_worker, xdcc_mirror
+from bot.custom_mirrors import fembed, onedrive_worker, xdcc_mirror, cloudflare_mirror
 
 
 @run_async
