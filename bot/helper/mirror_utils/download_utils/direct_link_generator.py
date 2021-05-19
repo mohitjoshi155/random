@@ -9,6 +9,7 @@ than the modifications. See https://github.com/AvinashReddy3108/PaperplaneExtend
 for original authorship. """
 
 import json
+import time
 import re
 import urllib.parse
 from os import popen
@@ -25,19 +26,44 @@ def direct_link_generator(link: str):
     if not link:
         raise DirectDownloadLinkException("`No links found!`")
     elif 'zippyshare.com' in link:
-        return zippy_share(link)
+        return zippy_share(link), None
     elif 'yadi.sk' in link:
-        return yandex_disk(link)
+        return yandex_disk(link), None
     elif 'cloud.mail.ru' in link:
-        return cm_ru(link)
+        return cm_ru(link), None
     elif 'mediafire.com' in link:
-        return mediafire(link)
+        return mediafire(link), None
     elif 'osdn.net' in link:
-        return osdn(link)
+        return osdn(link), None
     elif 'github.com' in link:
-        return github(link)
+        return github(link), None
+    elif 'megaup.net' in link:
+        return megaup(link)
     else:
         raise DirectDownloadLinkException(f'No Direct link function found for {link}')
+
+def megaup(url: str) -> tuple:
+    """ Megaup direct link generator"""
+    r = requests.get(url)
+    data = r.text.split("DeObfuscate_String_and_Create_Form_With_Mhoa_URL(", 2)[2].split(");")[0].split(",")
+    data = [a.strip("' ") for a in data]
+
+    idurl = ""
+    for i in range(int(len(data[0])/4) - 1, -1, -1):
+        idurl += data[0][i]
+
+    for i in range(int(len(data[0]) / 4 * 3 - 1), int(len(data[0]) / 4 * 2) - 1, -1):
+        idurl += data[0][i]
+
+    for i in range(int((len(data[1]) - 3) / 2 + 2), 2, -1):
+        idurl += data[1][i]
+
+    new_url = f"https://download.megaup.net/?idurl={idurl}&idfilename={data[2]}&idfilesize={data[3]}"
+    dl_url = requests.get(new_url).text.split('<a href="')[1].split('"')[0]
+    final_request = requests.get(dl_url)
+    cookie = final_request.headers['Set-Cookie'].split(" ")[0]
+    time.sleep(3)
+    return dl_url, cookie
 
 
 def zippy_share(url: str) -> str:

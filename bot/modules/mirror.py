@@ -239,7 +239,9 @@ def _mirror(bot, update, isTar=False, extract=False):
         return
 
     try:
-        link = direct_link_generator(link)
+        link, cookies = direct_link_generator(link)
+        if cookies:
+            aria_options.update({"header": f"Cookie:{cookies}"})
     except DirectDownloadLinkException as e:
         LOGGER.info(f'{link}: {e}')
     listener = MirrorListener(bot, update, isTar, tag, extract)
