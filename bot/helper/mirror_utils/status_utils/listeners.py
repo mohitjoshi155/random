@@ -11,7 +11,7 @@ class MirrorListeners:
     def onDownloadProgress(self):
         raise NotImplementedError
 
-    def onDownloadComplete(self):
+    def onDownloadComplete(self, gid=None):
         raise NotImplementedError
 
     def onDownloadError(self, error: str):

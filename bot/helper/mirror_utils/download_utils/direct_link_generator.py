@@ -62,7 +62,7 @@ def megaup(url: str) -> tuple:
     dl_url = requests.get(new_url).text.split('<a href="')[1].split('"')[0]
     final_request = requests.get(dl_url)
     cookie = final_request.headers['Set-Cookie'].split(" ")[0]
-    time.sleep(5)
+    time.sleep(10)
     return dl_url, cookie
 
 

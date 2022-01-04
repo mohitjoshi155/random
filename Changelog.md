@@ -1,0 +1,3 @@
+- Added method for changing gdrive folder id to upload to
+- Added method for updating without having to redeploy on you-know-what platform
+- Fixed some stuffs

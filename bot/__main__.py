@@ -2,7 +2,8 @@ import time
 import signal
 import shutil
 import pickle
-from os import execl, path, remove
+import subprocess
+from os import execl, path, remove, getcwd
 from sys import executable
 
 import psutil
@@ -17,6 +18,14 @@ from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.message_utils import sendMessage, sendLogFile, editMessage
 from bot.modules import authorize, list, cancel_mirror, mirror_status, mirror, clone, watch
 from bot.custom_mirrors import fembed, onedrive_worker, xdcc_mirror, cloudflare_mirror
+
+
+@run_async
+def change_root(update, context):
+    message_args = update.message.text.split(' ')
+    bot.parent_id = message_args[1]
+    message = f'Changed root drive ID to {bot.parent_id}'
+    sendMessage(message, context.bot, update)
 
 
 @run_async
@@ -50,9 +59,13 @@ Type /{BotCommands.HelpCommand} to get a list of available commands
 def restart(update, context):
     restart_message = sendMessage("Restarting, Please wait!", context.bot, update)
     # Save restart message object in order to reply to it after restarting
-    fs_utils.clean_all()
+    try:
+        fs_utils.clean_all()
+    except:
+        pass
     with open('restart.pickle', 'wb') as status:
         pickle.dump(restart_message, status)
+    subprocess.call(path.join(getcwd(), "update.sh"), stdout=subprocess.PIPE, shell=True)
     execl(executable, executable, "-m", "bot")
 
 
@@ -80,7 +93,7 @@ def bot_help(update, context):
 
 /{BotCommands.TarMirrorCommand} [download_url][magnet_link]: start mirroring and upload the archived (.tar) version of the download
 
-/{BotCommands.WatchCommand} [youtube-dl supported link]: Mirror through youtube-dl. Click /{BotCommands.WatchCommand} for more help.
+/{BotCommands.WatchCommand} [youtube-dl supported link]: Mirror through youtube-dl 
 
 /{BotCommands.TarWatchCommand} [youtube-dl supported link]: Mirror through youtube-dl and tar before uploading
 
@@ -120,12 +133,14 @@ def main():
     stats_handler = CommandHandler(BotCommands.StatsCommand,
                                    stats, filters=CustomFilters.authorized_chat | CustomFilters.authorized_user)
     log_handler = CommandHandler(BotCommands.LogCommand, log, filters=CustomFilters.owner_filter)
+    change_handler = CommandHandler("changeroot", change_root, filters=CustomFilters.owner_filter)
     dispatcher.add_handler(start_handler)
     dispatcher.add_handler(ping_handler)
     dispatcher.add_handler(restart_handler)
     dispatcher.add_handler(help_handler)
     dispatcher.add_handler(stats_handler)
     dispatcher.add_handler(log_handler)
+    dispatcher.add_handler(change_handler)
     updater.start_polling()
     LOGGER.info("Bot Started!")
     signal.signal(signal.SIGINT, fs_utils.exit_clean_up)

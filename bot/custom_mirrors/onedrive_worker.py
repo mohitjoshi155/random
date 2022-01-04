@@ -1,6 +1,7 @@
 import json
 from base64 import b64decode
 from urllib.parse import unquote
+import urllib3
 
 import requests
 from telegram.ext import CommandHandler, run_async
@@ -11,6 +12,7 @@ from bot.helper.ext_utils import bot_utils
 from bot.helper.telegram_helper.filters import CustomFilters
 from bot.helper.telegram_helper.message_utils import sendMessage, sendStatusMessage, update_all_messages
 
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 def get_onedrive_dl_links(url, folder=""):
     r = requests.get(url, verify=False)
