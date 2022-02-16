@@ -51,9 +51,11 @@ class XDCCArgs:
     def __init__(self, _dict):
 
         self.bot = _dict['bot']
-        self.channel = _dict['channel']
+        self.server = _dict['server']
+        self.port = _dict['port']
+        self.channel = "#" + str(_dict['channel'])
         self.action = _dict['action']
-        self.packs = _dict['packs']
+        self.packs = _dict['packs'].strip("#")
         self.stdout = False
 
 
@@ -289,7 +291,7 @@ class XDCCDownload(irc.client.SimpleIRCClient):
         self.__listener.onDownloadStarted()
 
 
-    def add_download(self, args, path, server="irc.rizon.net", port=6670, nickname=None):
+    def add_download(self, args, path, nickname=None):
         Path(path).mkdir(parents=True, exist_ok=True)
         self.base_path = path
         self.args = XDCCArgs(args)
@@ -303,7 +305,7 @@ class XDCCDownload(irc.client.SimpleIRCClient):
             self.args.action = "send"
 
         try:
-            self.connect(server, port, nickname)
+            self.connect(self.args.server, self.args.port, nickname)
         except irc.client.ServerConnectionError as e:
             self.__listener.onDownloadError(e)
             return

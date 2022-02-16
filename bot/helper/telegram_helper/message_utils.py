@@ -7,11 +7,16 @@ from bot import AUTO_DELETE_MESSAGE_DURATION, LOGGER, bot, \
 from bot.helper.ext_utils.bot_utils import get_readable_message
 
 
-def sendMessage(text: str, bot, update: Update):
+def sendMessage(text: str, bot, update: Update, mode="HTML"):
     try:
-        return bot.send_message(update.message.chat_id,
-                            reply_to_message_id=update.message.message_id,
-                            text=text, parse_mode='HTMl')
+        if mode == "HTML":
+            return bot.send_message(update.message.chat_id,
+                                reply_to_message_id=update.message.message_id,
+                                text=text, parse_mode='HTML')
+        elif mode == "md":
+            return bot.send_message(update.message.chat_id,
+                                reply_to_message_id=update.message.message_id,
+                                text=text, parse_mode='Markdown')
     except Exception as e:
         LOGGER.error(str(e))
 
@@ -20,7 +25,7 @@ def editMessage(text: str, message: Message):
     try:
         bot.edit_message_text(text=text, message_id=message.message_id,
                               chat_id=message.chat.id,
-                              parse_mode='HTMl')
+                              parse_mode='HTML')
     except Exception as e:
         LOGGER.error(str(e))
 

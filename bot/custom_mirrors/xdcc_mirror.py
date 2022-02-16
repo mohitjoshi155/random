@@ -16,34 +16,43 @@ def xdcc_download(update, context):
 
     bot = context.bot
     message_args = update.message.text.split(' ', 2)
+    usage_message = 'Xdcc download format is: `/xdcc [server[:port]],]<channel> /msg <bot> xdcc <send|batch> <1|1-5>`\n\n' \
+    'Eg: `/xdcc channelname /msg testbot xdcc batch 5-20\n\n`' \
+    'Default server is `irc.rizon.net`'
+
     try:
         server_channel = message_args[1]
     except IndexError:
-        server_channel = ''
-    server_channel = server_channel.strip()
-    if not server_channel:
-        sendMessage('You need to provide a channel to join.', bot, update)
+        sendMessage(usage_message, bot, update, "md")
         return
+    server_channel = server_channel.strip()
 
     try:
         command = message_args[2]
     except IndexError:
-        command = message_args[2]
-
-    if not command:
-        sendMessage('You need to provide download command.', bot, update)
+        sendMessage(usage_message, bot, update, "md")
         return
 
     server_channel = server_channel.split(",")
-    server_info = {}
-    args = {}
+    args = {
+        "server": "irc.rizon.net",
+        "port": 6667
+    }
 
-    for each_info in server_channel:
-        info = each_info.split("=")
-        if info[0].lower() == "channel":
-            args.update({info[0]: info[1]})
+    if len(server_channel) == 1:
+        args.update({"channel": server_channel[0]})
+    elif len(server_channel) == 2:
+        if ":" in server_channel[0]:
+            server_port = server_channel[0].split(":")
+            args.update({"server": server_port[0]})
+            args.update({"port": server_port[1]})
         else:
-            server_info.update({info[0]: info[1]})
+            args.update({"server": server_channel[0]})
+        args.update({"channel": server_channel[1]})
+    else:
+        sendMessage(usage_message, bot, update, "md")
+        return
+
     tag = None
 
     pattern = r".* (.*?) xdcc (send|batch) (.*)"
