@@ -15,7 +15,6 @@ class AriaQueue:
         self.listener = listener
         self.name = ""
 
-        self.base_path = ""
         self.queue = (link for link in links)
         self.queue_length = len(links)
         self.current_download = 0

@@ -175,7 +175,7 @@ class MirrorListener(listeners.MirrorListeners):
                 fs_utils.clean_download(download_dict[self.uid].path())
             except FileNotFoundError:
                 pass
-            del download_dict[self.message.message_id]
+            del download_dict[self.uid]
             count = len(download_dict)
         sendMessage(e_str, self.bot, self.update)
         if count == 0:
@@ -255,9 +255,59 @@ def _mirror(bot, update, isTar=False, extract=False):
         Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages))
 
 
+def _mirror_many(bot, update):
+    message_args = update.message.text.split(' ', 2)
+
+    if len(message_args) != 3:
+        sendMessage('Usage is : `/mirror_many <single|batch> <link1,link2,link3>`', bot, update, "md")
+        return
+    mode = message_args[1].strip()
+    link = message_args[2].strip()
+    LOGGER.info(link)
+    tag = None
+    
+    links = link.split(",")
+    invalid_links = []
+    valid_links = []
+    for each_link in links:
+        if not bot_utils.is_url(each_link) and not bot_utils.is_magnet(each_link):
+            invalid_links.append(each_link)
+        else:
+            valid_links.append(each_link)
+
+
+    if mode == "single":
+        num = 1
+        for each_link in valid_links:
+            listener = MirrorListener(bot, update, False, tag, False)
+            listener.uid = f"{listener.uid}{num}"
+            ariaDlManager.add_download(f'{DOWNLOAD_DIR}/{listener.uid}/', [each_link], listener, {})
+            num += 1
+
+    elif mode == "batch":
+        listener = MirrorListener(bot, update, False, tag, False, f"batch{update.message.message_id}")
+        ariaDlManager.add_download(f'{DOWNLOAD_DIR}/{listener.uid}/batch{update.message.message_id}', valid_links, listener, {})
+
+    else:
+        sendMessage('Usage is : `/mirror_many <single|batch> <link1,link2,link3>`', bot, update, "md")
+        return
+
+    if invalid_links:
+        invalid_message = f'{",".join(invalid_links)} are invalid links'
+        sendMessage(invalid_message, bot, update)
+    sendStatusMessage(update, bot)
+    if len(Interval) == 0:
+        Interval.append(setInterval(DOWNLOAD_STATUS_UPDATE_INTERVAL, update_all_messages))
+
+
 @run_async
 def mirror(update, context):
     _mirror(context.bot, update)
+
+
+@run_async
+def mirror_many(update, context):
+    _mirror_many(context.bot, update)
 
 
 @run_async
@@ -272,10 +322,13 @@ def unzip_mirror(update, context):
 
 mirror_handler = CommandHandler(BotCommands.MirrorCommand, mirror,
                                 filters=CustomFilters.authorized_chat | CustomFilters.authorized_user)
+mirror_many_handler = CommandHandler(BotCommands.MirrorManyCommand, mirror_many,
+                                filters=CustomFilters.authorized_chat | CustomFilters.authorized_user)
 tar_mirror_handler = CommandHandler(BotCommands.TarMirrorCommand, tar_mirror,
                                     filters=CustomFilters.authorized_chat | CustomFilters.authorized_user)
 unzip_mirror_handler = CommandHandler(BotCommands.UnzipMirrorCommand, unzip_mirror,
                                       filters=CustomFilters.authorized_chat | CustomFilters.authorized_user)
 dispatcher.add_handler(mirror_handler)
+dispatcher.add_handler(mirror_many_handler)
 dispatcher.add_handler(tar_mirror_handler)
 dispatcher.add_handler(unzip_mirror_handler)
