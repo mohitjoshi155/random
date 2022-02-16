@@ -4,8 +4,10 @@ This is custom fork of the original python mirror bot with custom added mirrors.
 Follow the instructions on the main repo to deploy.
 
 # Added or changed features
-## Multi-aria2 download support
-- Rewrote aria2 download helper to support multiple links in one command
+## Change upload location
+- Change folder id of gdrive for upload location temporarily until restart.
+
+Usage: `/changeroot <googledrive_folder_id>`
  
 ## mirror_many
 - Added mirroring multiple links in one command using default settings
