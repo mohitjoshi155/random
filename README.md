@@ -10,11 +10,11 @@ Follow the instructions on the main repo to deploy.
 ## XDCC
 - Added downloading from xdcc
 
-##### To Do
-```
-- [ ] Add proper help
-- [ ] Add proper error handling
-```
+Usage: `/xdcc [server[:port]],]<channel> /msg <bot> xdcc <send|batch> <1|1-5>`
+
+Eg: `/xdcc irc.xertion.org,MK /msg Rory|XDCC xdcc send #22969`
+
+Default server is `irc.rizon.net`
 
 ## Onedrive
 - Added recursive downloading from given url for certain onedrive indexes
