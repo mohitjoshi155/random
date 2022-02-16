@@ -7,6 +7,15 @@ Follow the instructions on the main repo to deploy.
 ## Multi-aria2 download support
 - Rewrote aria2 download helper to support multiple links in one command
  
+## mirror_many
+- Added mirroring multiple links in one command using default settings
+
+Usage: `/mirror_many <single|batch> <link1,link2,link3>`
+
+`single: add as as each individual task`
+
+`batch: add all links as one task`
+ 
 ## XDCC
 - Added downloading from xdcc
 
