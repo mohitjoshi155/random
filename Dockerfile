@@ -18,7 +18,7 @@ RUN apt-get -qq update && \
     libc-ares-dev libcurl4-openssl-dev \
     libsqlite3-dev libsodium-dev && \
     curl -L https://github.com/lzzy12/megasdkrest/releases/download/v0.1.14-rebuild/megasdkrest-$(cpu=$(uname -m); if [[ "$cpu" == "x86_64" ]]; then    echo "amd64"; elif [[ "$cpu" == "x86" ]]; then    echo "i386"; elif [[ "$cpu" == "aarch64" ]]; then    echo "arm64"; else    echo $cpu; fi) -o /usr/local/bin/megasdkrest && \
-    chmod +x /usr/local/bin/megasdkrest \
+    chmod +x /usr/local/bin/megasdkrest && \
     curl -L https://github.com/FlareSolverr/FlareSolverr/releases/download/v1.2.5/flaresolverr-v1.2.5-linux-x64.zip -o /usr/local/bin/flaresolverr.zip && \
     7z x /usr/local/bin/flaresolverr.zip -o/usr/local/bin && \
     mv /usr/local/bin/flaresolverr /usr/local/bin/flaresolverr1 && \
