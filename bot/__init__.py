@@ -92,7 +92,7 @@ if MEGA_KEY is not None:
     # Start megasdkrest binary
     subprocess.Popen(["megasdkrest", "--apikey", MEGA_KEY])
     time.sleep(3)  # Wait for the mega server to start listening
-    mega_client = MegaSdkRestClient('http://localhost:6090')
+    # mega_client = MegaSdkRestClient('http://localhost:6090')
     try:
         MEGA_USERNAME = getConfig('MEGA_USERNAME')
         MEGA_PASSWORD = getConfig('MEGA_PASSWORD')
